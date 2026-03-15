@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-
   const { problem } = req.body;
 
   const prompt = `
@@ -8,18 +7,19 @@ export default async function handler(req, res) {
 문제:
 ${problem}
 
-다음 8단계 사고 질문을 생성하라.
+다음 형식의 JSON만 반환하라.
+설명 없이 JSON만 반환하라.
 
-1 point of imagination
-2 point of observation
-3 point of perspective
-4 point of connection
-5 point of transformation
-6 point of constraint
-7 point of question
-8 problem discovery point
-
-각 단계마다 3개의 질문을 만들어라.
+{
+  "imagination": ["질문1", "질문2", "질문3"],
+  "observation": ["질문1", "질문2", "질문3"],
+  "perspective": ["질문1", "질문2", "질문3"],
+  "connection": ["질문1", "질문2", "질문3"],
+  "transformation": ["질문1", "질문2", "질문3"],
+  "constraint": ["질문1", "질문2", "질문3"],
+  "question": ["질문1", "질문2", "질문3"],
+  "discovery": ["질문1", "질문2", "질문3"]
+}
 `;
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -31,13 +31,12 @@ ${problem}
     body: JSON.stringify({
       model: "gpt-4o-mini",
       messages: [
+        { role: "system", content: "You generate structured thinking questions in JSON only." },
         { role: "user", content: prompt }
       ]
     })
   });
 
   const data = await response.json();
-
   res.status(200).json(data);
-
 }

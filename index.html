@@ -1,0 +1,49 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>HAN DOT · Problem dot</title>
+<style>
+body{font-family:system-ui;background:#f1f5f9;margin:0;padding:40px;color:#0f172a}
+.wrap{max-width:900px;margin:auto}
+.card{background:white;border-radius:20px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,.1)}
+h1{font-size:42px;margin:0 0 10px}
+.small{letter-spacing:.2em;text-transform:uppercase;color:#64748b;font-size:12px}
+textarea{width:100%;min-height:120px;border-radius:10px;border:1px solid #cbd5e1;padding:10px;margin-top:10px}
+button{margin-top:20px;padding:12px 20px;border:none;border-radius:10px;background:#020617;color:white;font-weight:700}
+.result{margin-top:20px;padding:15px;border-radius:10px;background:#fef3c7}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+<div class="small">Dream Of Thinking</div>
+<h1>Problem dot</h1>
+<p>작은 점(DOT)에서 생각이 시작됩니다.<br/>
+당신이 발견한 문제는 진짜 문제인가요?</p>
+
+<label>오늘 당신이 문제라고 생각한 것은 무엇인가요?</label>
+<textarea id="problem" placeholder="예: 도서관에서 자리를 잡기 어렵다"></textarea>
+
+<button onclick="generate()">Problem dot 만들기</button>
+
+<div id="result" class="result" style="display:none"></div>
+</div>
+</div>
+
+<script>
+function generate(){
+const input=document.getElementById("problem").value;
+const result=document.getElementById("result");
+
+const prompt=`문제라고 생각한 상황: ${input}
+이 상황의 진짜 문제를 다시 분석하고 해결 아이디어를 제안해줘.`;
+
+result.style.display="block";
+result.innerHTML="<b>AI Prompt</b><br><pre>"+prompt+"</pre>";
+}
+</script>
+</body>
+</html>

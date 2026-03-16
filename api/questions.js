@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     }
 
     const stepGuide = {
-      imagination: "문제라고 생각한 상황의 가정과 전제를 흔들고, 다른 가능성을 상상하게 하는 질문",
+      imagination: "문제라고 생각한 상황의 가정과 전제를 흔들고 다른 가능성을 상상하게 하는 질문",
       observation: "실제 현상, 반복 패턴, 시간, 행동, 맥락을 관찰하게 하는 질문",
       perspective: "사용자, 관리자, 공간, 시스템 등 서로 다른 관점 차이를 드러내는 질문",
       connection: "다른 상황이나 구조와의 유사성, 연결 가능성을 탐색하는 질문",
@@ -60,9 +60,7 @@ ${previousContext}
 - 원인, 패턴, 구조, 전제, 관점 차이를 탐색할 것
 
 [질문 생성 규칙]
-- 현재 step에 맞는 질문만 생성할 것
-- 질문 개수는 3개에서 5개 사이로 생성할 것
-- 매번 질문 개수가 달라질 수 있도록 자연스럽게 생성할 것
+- 현재 step에 맞는 질문 1개만 생성할 것
 - 이전 사용자의 답변을 반영해 다음 질문을 만들 것
 - 질문은 한국어로 작성할 것
 - 질문은 짧지만 깊이 생각하게 만들 것
@@ -73,7 +71,7 @@ ${previousContext}
 설명, 인사말, 코드블록, 마크다운 없이 JSON만 출력하라.
 
 {
-  "questions": ["질문1", "질문2", "질문3"]
+  "question": "질문 1개"
 }
 `;
 
@@ -90,7 +88,7 @@ ${previousContext}
           {
             role: "system",
             content:
-              "You generate HANDOT problem-discovery questions in Korean. Return JSON only."
+              "You generate one HANDOT problem-discovery question in Korean. Return JSON only."
           },
           {
             role: "user",
@@ -124,11 +122,7 @@ ${previousContext}
       });
     }
 
-    if (
-      !parsed ||
-      !Array.isArray(parsed.questions) ||
-      parsed.questions.length < 1
-    ) {
+    if (!parsed || typeof parsed.question !== "string" || !parsed.question.trim()) {
       return res.status(500).json({
         error: "AI 응답 형식이 올바르지 않음",
         parsed

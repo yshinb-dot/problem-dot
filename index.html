@@ -1,373 +1,984 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAN DOT · Problem dot</title>
+  <style>
+    :root{
+      --bg1:#f8fafc;
+      --bg2:#e2e8f0;
+      --bg3:#cbd5e1;
+      --white:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --dark:#020617;
+      --accent:#f59e0b;
+      --accent-bg:#fef3c7;
+    }
 
-<title>HAN DOT · Problem dot</title>
+    *{box-sizing:border-box}
 
-<style>
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:radial-gradient(circle at top, var(--bg1), var(--bg2) 55%, var(--bg3));
+      min-height:100vh;
+    }
 
-body{
-font-family:system-ui;
-background:#f5f7fb;
-margin:0;
-padding:40px;
-color:#0f172a;
-}
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding:24px;
+    }
 
-.container{
-max-width:900px;
-margin:auto;
-}
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:rgba(255,255,255,.82);
+      backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,.7);
+      border-radius:24px;
+      padding:18px 20px;
+      box-shadow:0 10px 30px rgba(15,23,42,.08);
+    }
 
-.card{
-background:white;
-border-radius:16px;
-padding:30px;
-box-shadow:0 10px 25px rgba(0,0,0,0.08);
-margin-bottom:30px;
-}
+    .tiny{
+      font-size:12px;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      color:#64748b;
+      font-weight:700;
+    }
 
-.title{
-font-size:28px;
-font-weight:700;
-margin-bottom:8px;
-}
+    .title{
+      font-size:24px;
+      font-weight:900;
+      margin-top:4px;
+    }
 
-.subtitle{
-color:#64748b;
-line-height:1.7;
-margin-bottom:20px;
-}
+    .screen{display:none}
+    .screen.active{display:block}
 
-.step{
-font-size:14px;
-font-weight:700;
-color:#64748b;
-margin-bottom:10px;
-}
+    .hero{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:28px;
+      margin-top:28px;
+    }
 
-.point-title{
-font-size:22px;
-font-weight:700;
-margin-bottom:8px;
-}
+    .card{
+      background:rgba(255,255,255,.9);
+      border:1px solid rgba(255,255,255,.7);
+      border-radius:32px;
+      padding:32px;
+      box-shadow:0 12px 32px rgba(15,23,42,.1);
+      backdrop-filter:blur(8px);
+    }
 
-.point-desc{
-color:#64748b;
-line-height:1.6;
-margin-bottom:20px;
-}
+    .hero-dark{
+      background:#020617;
+      color:white;
+      border-radius:32px;
+      padding:32px;
+      box-shadow:0 20px 50px rgba(2,6,23,.28);
+    }
 
-.question{
-background:#020617;
-color:white;
-padding:18px;
-border-radius:10px;
-line-height:1.7;
-margin-bottom:20px;
-}
+    .pill{
+      display:inline-block;
+      padding:8px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.1);
+      color:#e2e8f0;
+      font-size:12px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      font-weight:800;
+    }
 
-textarea{
-width:100%;
-min-height:120px;
-padding:14px;
-border-radius:8px;
-border:1px solid #cbd5e1;
-font-size:15px;
-line-height:1.6;
-}
+    .hero h1{
+      font-size:60px;
+      line-height:1.05;
+      margin:22px 0 0;
+      font-weight:950;
+    }
 
-button{
-padding:12px 18px;
-border:none;
-border-radius:8px;
-background:#020617;
-color:white;
-font-weight:600;
-cursor:pointer;
-margin-top:15px;
-}
+    .hero p{
+      font-size:18px;
+      line-height:1.8;
+      color:#cbd5e1;
+      max-width:800px;
+      word-break:keep-all;
+    }
 
-button.secondary{
-background:#e2e8f0;
-color:#0f172a;
-}
+    .question-box{
+      margin-top:34px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:24px;
+      padding:22px;
+    }
 
-.result{
-background:#fef3c7;
-padding:20px;
-border-radius:10px;
-line-height:1.7;
-margin-top:15px;
-}
+    .question-box .big{
+      font-size:30px;
+      line-height:1.5;
+      font-weight:900;
+      margin-top:10px;
+      word-break:keep-all;
+    }
 
-.prompt{
-background:#020617;
-color:white;
-padding:20px;
-border-radius:10px;
-margin-top:20px;
-white-space:pre-wrap;
-line-height:1.7;
-}
+    .actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:24px;
+    }
 
-.copy{
-background:#f59e0b;
-margin-top:10px;
-}
+    button{
+      border:none;
+      border-radius:18px;
+      padding:14px 20px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.15s transform ease,.15s background ease,.15s opacity ease;
+    }
 
-</style>
+    button:hover{transform:translateY(-1px)}
+    button:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+    .primary{background:white;color:#020617}
+    .secondary{
+      background:rgba(255,255,255,.06);
+      color:white;
+      border:1px solid rgba(255,255,255,.15);
+    }
+    .light-btn{background:#020617;color:white}
+    .ghost{
+      background:white;
+      border:1px solid var(--line);
+      color:#334155;
+    }
+    .copy-btn{
+      background:#f59e0b;
+      color:white;
+    }
+
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+    .subcard{
+      background:#f8fafc;
+      border:1px solid var(--line);
+      padding:18px;
+      border-radius:22px;
+    }
+
+    .subcard.accent{
+      background:#fef3c7;
+      border-color:#fcd34d;
+    }
+
+    .subcard .label{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      color:#94a3b8;
+      font-weight:800;
+    }
+
+    .subcard.accent .label{color:#b45309}
+
+    .subcard .value{
+      font-size:20px;
+      font-weight:900;
+      margin-top:8px;
+      line-height:1.5;
+      word-break:keep-all;
+    }
+
+    .section-title{
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.18em;
+      color:#64748b;
+      font-weight:800;
+    }
+
+    .big-title{
+      margin-top:12px;
+      font-size:42px;
+      line-height:1.15;
+      font-weight:950;
+      word-break:keep-all;
+    }
+
+    .desc{
+      margin-top:14px;
+      font-size:16px;
+      color:#475569;
+      line-height:1.9;
+      max-width:760px;
+      word-break:keep-all;
+      white-space:normal;
+    }
+
+    textarea,input{
+      width:100%;
+      border:1px solid #cbd5e1;
+      border-radius:24px;
+      background:white;
+      padding:18px;
+      font-size:16px;
+      color:#0f172a;
+      outline:none;
+      transition:border-color .15s ease;
+      font-family:inherit;
+      line-height:1.8;
+    }
+
+    textarea:focus,input:focus{border-color:#64748b}
+    textarea{
+      min-height:180px;
+      resize:vertical;
+      word-break:keep-all;
+    }
+
+    .progress{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .badge{
+      border-radius:999px;
+      padding:6px 12px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid #e2e8f0;
+      background:white;
+      color:#94a3b8;
+    }
+
+    .badge.done{background:#f1f5f9;color:#334155}
+    .badge.active{background:#020617;color:white;border-color:#020617}
+
+    .step-grid{
+      display:grid;
+      grid-template-columns:.95fr 1.05fr;
+      gap:24px;
+      margin-top:28px;
+    }
+
+    .left-dark{
+      border-radius:28px;
+      background:#020617;
+      color:white;
+      padding:24px;
+    }
+
+    .left-dark .topic{
+      margin-top:12px;
+      font-size:28px;
+      font-weight:900;
+      line-height:1.5;
+      word-break:keep-all;
+    }
+
+    .question-list{
+      margin-top:24px;
+      display:grid;
+      gap:16px;
+    }
+
+    .question-item{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:18px;
+      padding:16px;
+      font-size:15px;
+      line-height:1.9;
+      color:#e2e8f0;
+      word-break:keep-all;
+      white-space:normal;
+    }
+
+    .right-card{
+      background:#f8fafc;
+      border:1px solid var(--line);
+      border-radius:28px;
+      padding:24px;
+    }
+
+    .hint-box{
+      margin-top:14px;
+      background:#fff;
+      border:1px dashed #cbd5e1;
+      color:#475569;
+      border-radius:18px;
+      padding:14px 16px;
+      line-height:1.8;
+      font-size:14px;
+      word-break:keep-all;
+    }
+
+    .result-box{
+      border-radius:28px;
+      padding:24px;
+      background:#020617;
+      color:white;
+      margin-top:24px;
+    }
+
+    pre{
+      white-space:pre-wrap;
+      font-family:inherit;
+      line-height:1.9;
+      margin:0;
+      color:#e2e8f0;
+      word-break:keep-all;
+    }
+
+    .mt-24{margin-top:24px}
+    .mt-32{margin-top:32px}
+    .hidden{display:none}
+    .loading-note{
+      margin-top:16px;
+      font-size:14px;
+      color:#64748b;
+      font-weight:700;
+    }
+
+    .copy-note{
+      margin-top:10px;
+      font-size:13px;
+      color:#64748b;
+      font-weight:700;
+    }
+
+    @media (max-width: 980px){
+      .hero,.step-grid,.grid2,.grid4{grid-template-columns:1fr}
+      .hero h1{font-size:42px}
+      .big-title{font-size:34px}
+      .topbar{flex-direction:column;align-items:flex-start;gap:12px}
+    }
+  </style>
 </head>
-
 <body>
-
-<div class="container">
-
-<div class="card">
-
-<div class="title">HAN DOT · Problem dot</div>
-
-<div class="subtitle">
-Dream of Thinking<br>
-생각을 억지로 밀어가지 않고<br>
-생각이 꿈꾸도록 둔 뒤 그 흐름을 관찰합니다.
-</div>
-
-<textarea id="problemInput">
-도서관에서 자리를 잡기 어렵다
-</textarea>
-
-<button onclick="start()">Problem dot 시작</button>
-
-</div>
-
-
-<div id="workspace"></div>
-
-</div>
-
-
-<script>
-
-const steps = [
-
-{
-key:"imagination",
-title:"point of imagination",
-desc:"문제의 가정을 흔들어 보는 단계"
-},
-
-{
-key:"observation",
-title:"point of observation",
-desc:"실제 상황을 관찰하는 단계"
-},
-
-{
-key:"perspective",
-title:"point of perspective",
-desc:"다른 관점에서 바라보는 단계"
-},
-
-{
-key:"connection",
-title:"point of connection",
-desc:"다른 상황과 연결해 보는 단계"
-},
-
-{
-key:"transformation",
-title:"point of transformation",
-desc:"구조 변화를 상상하는 단계"
-},
-
-{
-key:"constraint",
-title:"point of constraint",
-desc:"제약 조건을 탐색하는 단계"
-},
-
-{
-key:"question",
-title:"point of question",
-desc:"핵심 질문을 찾는 단계"
-},
-
-{
-key:"discovery",
-title:"problem discovery point",
-desc:"Problem dot을 정리하는 단계"
-}
-
-]
-
-let stepIndex=0
-let answers={}
-let problem=""
-
-async function start(){
-
-problem=document.getElementById("problemInput").value
-
-stepIndex=0
-answers={}
-
-nextStep()
-
-}
-
-async function nextStep(){
-
-if(stepIndex>=steps.length){
-showResult()
-return
-}
-
-const step=steps[stepIndex]
-
-const questions=await fetchQuestions(step.key)
-
-const q=questions[Math.floor(Math.random()*questions.length)]
-
-renderStep(step,q)
-
-}
-
-async function fetchQuestions(step){
-
-const res=await fetch("/api/questions",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-
-problem:problem,
-
-previous_answers:answers,
-
-step:step
-
-})
-
-})
-
-const data=await res.json()
-
-return data.questions
-
-}
-
-function renderStep(step,question){
-
-const html=`
-
-<div class="card">
-
-<div class="step">
-STEP ${stepIndex+1} / ${steps.length}
-</div>
-
-<div class="point-title">
-${step.title}
-</div>
-
-<div class="point-desc">
-${step.desc}
-</div>
-
-<div class="question">
-${question}
-</div>
-
-<textarea id="thinking"></textarea>
-
-<button onclick="saveAnswer()">다음</button>
-
-</div>
-
-`
-
-document.getElementById("workspace").innerHTML=html
-
-}
-
-function saveAnswer(){
-
-const text=document.getElementById("thinking").value
-
-answers[steps[stepIndex].key]=text
-
-stepIndex++
-
-nextStep()
-
-}
-
-function showResult(){
-
-const problemDot=answers.discovery || ""
-
-const prompt=
-
-`다음 문제를 해결할 아이디어를 제안해줘.
-
-처음 문제:
-${problem}
-
-Problem dot:
-${problemDot}
-
-사고 과정:
-${JSON.stringify(answers,null,2)}
-`
-
-const html=`
-
-<div class="card">
-
-<div class="title">
-Problem dot
-</div>
-
-<div class="result">
-${problemDot}
-</div>
-
-<div class="title" style="margin-top:20px">
-AI Prompt
-</div>
-
-<div class="prompt" id="promptText">
-${prompt}
-</div>
-
-<button class="copy" onclick="copyPrompt()">Copy Prompt</button>
-
-</div>
-
-`
-
-document.getElementById("workspace").innerHTML=html
-
-}
-
-function copyPrompt(){
-
-const text=document.getElementById("promptText").innerText
-
-navigator.clipboard.writeText(text)
-
-alert("Prompt copied!")
-
-}
-
-</script>
-
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <div class="tiny">thehondot.com</div>
+        <div class="title">HAN DOT · Problem dot</div>
+      </div>
+      <div style="text-align:right">
+        <div class="tiny" style="color:#94a3b8">Philosophy</div>
+        <div style="margin-top:4px;font-size:14px;font-weight:800;color:#334155">Dream Of Thinking</div>
+      </div>
+    </div>
+
+    <!-- Landing -->
+    <section id="screen-landing" class="screen active">
+      <div class="hero">
+        <div class="hero-dark">
+          <div class="pill">Dream Of Thinking</div>
+          <h1>작은 점에서<br>생각이 시작됩니다.</h1>
+          <p>
+            생각을 억지로 밀어가지 않고, 생각이 꿈꾸도록 둔 뒤 그 흐름을 관찰합니다.
+            Problem dot은 그 과정 속에서 진짜 문제의 점을 발견하도록 돕는 HANDOT의 첫 번째 웹 도구입니다.
+          </p>
+
+          <div class="question-box">
+            <div class="tiny" style="color:#94a3b8">Core Question</div>
+            <div class="big">당신이 발견한 문제는<br>진짜 문제인가요?</div>
+          </div>
+
+          <div class="actions">
+            <button class="primary" onclick="showScreen('input')">Problem dot 시작하기</button>
+            <button class="secondary" onclick="showScreen('overview')">DOT Algorithm 보기</button>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:20px">
+          <div class="card">
+            <div class="section-title">HAN DOT Structure</div>
+            <div class="subcard mt-24">
+              <div class="label">Brand</div>
+              <div class="value">HAN DOT</div>
+            </div>
+            <div class="subcard mt-24">
+              <div class="label">Algorithm</div>
+              <div class="value">AI-generated points → Problem dot</div>
+            </div>
+            <div class="subcard accent mt-24">
+              <div class="label">Current Module</div>
+              <div class="value">Problem dot</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Final Output</div>
+            <div class="value" style="margin-top:10px;font-size:28px">해결안이 아니라<br>AI에 넣을 진짜 문제 프롬프트</div>
+            <div class="desc">
+              사용자는 여러 point를 지나며 자신이 처음 문제라고 생각했던 것을 다시 보고,
+              마지막에 Problem dot과 AI Prompt를 얻게 됩니다.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Overview -->
+    <section id="screen-overview" class="screen">
+      <div class="card" style="margin-top:28px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+          <div>
+            <div class="section-title">DOT Algorithm</div>
+            <div class="big-title">Problem discovery worksheet</div>
+          </div>
+          <button class="ghost" onclick="showScreen('landing')">돌아가기</button>
+        </div>
+
+        <div class="grid4 mt-32" id="overview-grid"></div>
+      </div>
+    </section>
+
+    <!-- Input -->
+    <section id="screen-input" class="screen">
+      <div class="card" style="margin-top:28px;max-width:920px;margin-left:auto;margin-right:auto">
+        <div class="section-title">Problem dot 시작</div>
+        <div class="big-title">오늘 당신이 문제라고 생각한 것은 무엇인가요?</div>
+        <div class="desc">
+          지금 확신하지 않아도 됩니다. 일단 문제라고 느낀 것을 적어보세요.
+          Problem dot은 그 생각을 바로 답으로 취급하지 않고, 여러 point를 지나며 다시 바라보게 합니다.
+        </div>
+
+        <div class="mt-32">
+          <textarea id="problemInput" placeholder="예: 도서관에서 자리를 잡기 어렵다">도서관에서 자리를 잡기 어렵다</textarea>
+        </div>
+
+        <div class="loading-note" id="loading-note"></div>
+
+        <div class="actions">
+          <button class="light-btn" onclick="startFlow()">첫 번째 point로 이동</button>
+          <button class="ghost" onclick="showScreen('landing')">처음으로</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step -->
+    <section id="screen-step" class="screen">
+      <div class="card" style="margin-top:28px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap">
+          <div>
+            <div class="section-title">DOT Algorithm</div>
+            <div id="step-indicator" style="font-size:14px;font-weight:800;color:#64748b;margin-top:8px;"></div>
+            <div class="big-title" id="step-title"></div>
+            <div class="desc" id="step-korean" style="margin-top:8px"></div>
+            <div id="question-indicator" style="font-size:14px;font-weight:700;color:#64748b;margin-top:8px;"></div>
+          </div>
+          <div class="progress" id="progress"></div>
+        </div>
+
+        <div class="step-grid">
+          <div class="left-dark">
+            <div class="tiny" style="color:#94a3b8">Current Input</div>
+            <div class="topic" id="current-problem"></div>
+
+            <div style="margin-top:24px" class="tiny">AI-generated Question</div>
+            <div class="question-list" id="question-list"></div>
+          </div>
+
+          <div class="right-card">
+            <div class="section-title">Your Thinking</div>
+            <div class="desc" id="step-desc"></div>
+
+            <div class="hint-box" id="thinking-hint">
+              위 질문 하나를 중심으로 떠오르는 생각을 자유롭게 적어보세요.
+            </div>
+
+            <div class="mt-24">
+              <textarea id="step-answer" placeholder="이 질문을 보며 떠오르는 생각을 자유롭게 적어보세요."></textarea>
+            </div>
+
+            <div id="draft-wrap" class="hidden">
+              <div class="subcard accent mt-24">
+                <div class="label">Problem dot draft</div>
+                <div style="margin-top:12px">
+                  <textarea id="draft-problem" placeholder="여기서 새롭게 보인 진짜 문제를 한 문장으로 정리하세요."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions" style="justify-content:space-between">
+              <button class="ghost" onclick="prevStep()">이전</button>
+              <button class="light-btn" onclick="nextStep()" id="next-btn">다음</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Result -->
+    <section id="screen-result" class="screen">
+      <div class="card" style="margin-top:28px">
+        <div class="section-title">Result</div>
+        <div class="big-title">Problem dot이 정리되었습니다.</div>
+        <div class="desc">
+          우리는 해결책을 제시하지 않습니다. 대신, 여러 point를 지나며 당신이 처음 문제라고 생각했던 것을 다시 보고,
+          AI에 전달할 수 있는 더 정확한 문제 프롬프트를 만듭니다.
+        </div>
+
+        <div class="grid2 mt-32">
+          <div class="subcard">
+            <div class="label">처음 생각한 문제</div>
+            <div class="value" id="result-original"></div>
+          </div>
+          <div class="subcard accent">
+            <div class="label">Problem dot</div>
+            <div class="value" id="result-discovered"></div>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="tiny" style="color:#94a3b8">Final AI Prompt</div>
+          <div style="margin-top:16px">
+            <pre id="final-prompt"></pre>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="copy-btn" onclick="copyPrompt()">Copy Prompt</button>
+          <button class="ghost" onclick="backToLastStep()">이전</button>
+          <button class="light-btn" onclick="restartAll()">처음부터 다시 하기</button>
+        </div>
+        <div class="copy-note" id="copy-note"></div>
+
+        <div class="grid4 mt-32" id="result-grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const steps = [
+      {
+        key: "imagination",
+        no: "01",
+        title: "point of imagination",
+        korean: "상상의 지점",
+        desc: "문제의 가정을 흔들어 보는 단계"
+      },
+      {
+        key: "observation",
+        no: "02",
+        title: "point of observation",
+        korean: "관찰의 지점",
+        desc: "실제 상황을 관찰하는 단계"
+      },
+      {
+        key: "perspective",
+        no: "03",
+        title: "point of perspective",
+        korean: "관점의 지점",
+        desc: "다른 관점에서 바라보는 단계"
+      },
+      {
+        key: "connection",
+        no: "04",
+        title: "point of connection",
+        korean: "연결의 지점",
+        desc: "다른 상황과 연결해 보는 단계"
+      },
+      {
+        key: "transformation",
+        no: "05",
+        title: "point of transformation",
+        korean: "변형의 지점",
+        desc: "구조 변화를 상상하는 단계"
+      },
+      {
+        key: "constraint",
+        no: "06",
+        title: "point of constraint",
+        korean: "제약의 지점",
+        desc: "제약 조건을 탐색하는 단계"
+      },
+      {
+        key: "question",
+        no: "07",
+        title: "point of question",
+        korean: "질문의 지점",
+        desc: "핵심 질문을 찾는 단계"
+      },
+      {
+        key: "discovery",
+        no: "08",
+        title: "problem discovery point",
+        korean: "문제 발견의 지점",
+        desc: "Problem dot을 정리하는 단계"
+      }
+    ];
+
+    let currentStep = 0;
+    let problemInput = "도서관에서 자리를 잡기 어렵다";
+    let answers = {};
+    let draftProblemDot = "";
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+
+    function showScreen(name){
+      document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
+      document.getElementById("screen-" + name).classList.add("active");
+      if(name === "overview") renderOverview();
+      if(name === "step") renderStep();
+      if(name === "result") renderResult();
+    }
+
+    function getFallbackQuestions(problem, stepKey){
+      const topic = (problem || "").trim() || "이 상황";
+
+      const fallback = {
+        imagination: [
+          `${topic}이 정말 문제라고 할 수 있을까?`,
+          `${topic}을 문제로 보지 않는다면 어떤 다른 해석이 가능할까?`,
+          `${topic}이 실제 현상보다 느낌에 가까운 것은 아닐까?`
+        ],
+        observation: [
+          `${topic}은 언제 가장 자주 발생하는가?`,
+          `${topic}이 반복되는 구체적인 장면은 무엇인가?`,
+          `${topic}을 경험하는 사람들은 어떤 행동을 하고 있는가?`
+        ],
+        perspective: [
+          `${topic}을 사용자 입장에서 보면 무엇이 문제인가?`,
+          `${topic}을 운영자 입장에서 보면 무엇이 다르게 보일까?`,
+          `${topic}을 시스템 입장에서 보면 무엇이 핵심일까?`
+        ],
+        connection: [
+          `${topic}과 비슷한 구조를 가진 다른 상황은 무엇일까?`,
+          `${topic}을 전혀 다른 맥락과 연결하면 무엇이 보일까?`,
+          `${topic}은 다른 문제와 어떤 방식으로 이어져 있을까?`
+        ],
+        transformation: [
+          `${topic}의 순서가 바뀌면 문제 인식도 달라질까?`,
+          `${topic}의 규모가 줄거나 커지면 무엇이 달라질까?`,
+          `${topic}의 구조를 뒤집어 보면 무엇이 보일까?`
+        ],
+        constraint: [
+          `${topic}에서 바꿀 수 없는 조건은 무엇인가?`,
+          `${topic}을 더 어렵게 만드는 제약은 무엇인가?`,
+          `${topic}의 본질을 드러내는 제한 조건은 무엇일까?`
+        ],
+        question: [
+          `${topic}에 대해 다시 물어야 할 핵심 질문은 무엇인가?`,
+          `${topic}을 당연하게 만든 전제는 무엇인가?`,
+          `${topic}을 진짜 문제로 만드는 근거는 무엇인가?`
+        ],
+        discovery: [
+          `처음 문제와 지금 보이는 문제는 어떻게 다른가?`,
+          `${topic}의 겉문제와 속문제를 나누면 무엇인가?`,
+          `${topic}에서 가장 핵심적인 Problem dot은 무엇인가?`
+        ]
+      };
+
+      return fallback[stepKey] || [`${topic}에 대해 다시 생각해 볼 질문은 무엇인가?`];
+    }
+
+    async function fetchAIQuestions(problem, stepKey){
+      try {
+        const res = await fetch("/api/questions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            problem: problem,
+            previous_answers: answers,
+            step: stepKey
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          console.error("API 오류:", data);
+          return getFallbackQuestions(problem, stepKey);
+        }
+
+        if (data && Array.isArray(data.questions) && data.questions.length > 0) {
+          return data.questions;
+        }
+
+        return getFallbackQuestions(problem, stepKey);
+
+      } catch (error) {
+        console.error("AI 질문 생성 오류:", error);
+        return getFallbackQuestions(problem, stepKey);
+      }
+    }
+
+    function renderOverview(){
+      const box = document.getElementById("overview-grid");
+      box.innerHTML = "";
+      steps.forEach(step => {
+        const div = document.createElement("div");
+        div.className = "subcard";
+        div.innerHTML = `
+          <div class="label">step ${step.no}</div>
+          <div style="margin-top:8px;font-size:20px;font-weight:900;line-height:1.5;word-break:keep-all;">${step.title}</div>
+          <div style="margin-top:4px;font-size:14px;color:#64748b;font-weight:700;word-break:keep-all;">${step.korean}</div>
+          <div style="margin-top:12px;font-size:14px;color:#475569;line-height:1.8;word-break:keep-all;">${step.desc}</div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    async function startFlow(){
+      problemInput = document.getElementById("problemInput").value.trim();
+      document.getElementById("loading-note").textContent = "AI가 첫 질문을 생성하고 있습니다...";
+
+      currentStep = 0;
+      currentQuestionIndex = 0;
+      currentQuestions = [];
+      answers = {};
+      draftProblemDot = "";
+
+      currentQuestions = await fetchAIQuestions(problemInput, steps[currentStep].key);
+
+      document.getElementById("loading-note").textContent = "";
+      showScreen("step");
+    }
+
+    function renderProgress(){
+      const box = document.getElementById("progress");
+      box.innerHTML = "";
+      steps.forEach((step, idx) => {
+        const span = document.createElement("div");
+        let cls = "badge";
+        if(idx < currentStep) cls += " done";
+        if(idx === currentStep) cls += " active";
+        span.className = cls;
+        span.textContent = step.no;
+        box.appendChild(span);
+      });
+    }
+
+    function renderStep(){
+      const step = steps[currentStep];
+
+      if (!currentQuestions || currentQuestions.length === 0) {
+        currentQuestions = getFallbackQuestions(problemInput, step.key);
+      }
+
+      if (currentQuestionIndex >= currentQuestions.length) {
+        currentQuestionIndex = 0;
+      }
+
+      document.getElementById("step-indicator").textContent =
+        `STEP ${currentStep + 1} / ${steps.length}`;
+
+      document.getElementById("question-indicator").textContent =
+        `질문 ${currentQuestionIndex + 1} / ${currentQuestions.length}`;
+
+      document.getElementById("step-title").textContent = step.title;
+      document.getElementById("step-korean").textContent = step.korean;
+      document.getElementById("step-desc").textContent = step.desc;
+      document.getElementById("current-problem").textContent =
+        problemInput || "입력된 내용이 없습니다.";
+
+      const answerKey = `${step.key}_${currentQuestionIndex}`;
+      document.getElementById("step-answer").value = answers[answerKey] || "";
+
+      const qBox = document.getElementById("question-list");
+      qBox.innerHTML = "";
+
+      const div = document.createElement("div");
+      div.className = "question-item";
+      div.textContent = currentQuestions[currentQuestionIndex];
+      qBox.appendChild(div);
+
+      const nextBtn = document.getElementById("next-btn");
+
+      if (currentQuestionIndex < currentQuestions.length - 1) {
+        nextBtn.textContent = "다음 질문";
+      } else if (currentStep < steps.length - 1) {
+        nextBtn.textContent = "다음 point";
+      } else {
+        nextBtn.textContent = "결과 보기";
+      }
+
+      const hintBox = document.getElementById("thinking-hint");
+      hintBox.textContent = "위 질문 하나를 중심으로 떠오르는 생각을 자유롭게 적어보세요.";
+
+      const draftWrap = document.getElementById("draft-wrap");
+      if (step.key === "discovery" && currentQuestionIndex === currentQuestions.length - 1) {
+        draftWrap.classList.remove("hidden");
+        document.getElementById("draft-problem").value = draftProblemDot;
+      } else {
+        draftWrap.classList.add("hidden");
+      }
+
+      renderProgress();
+    }
+
+    function saveCurrentStep(){
+      const step = steps[currentStep];
+      const key = `${step.key}_${currentQuestionIndex}`;
+      answers[key] = document.getElementById("step-answer").value.trim();
+
+      if (
+        step.key === "discovery" &&
+        currentQuestionIndex === currentQuestions.length - 1
+      ) {
+        draftProblemDot = document.getElementById("draft-problem").value.trim();
+      }
+    }
+
+    async function nextStep(){
+      saveCurrentStep();
+
+      if (currentQuestionIndex < currentQuestions.length - 1) {
+        currentQuestionIndex += 1;
+        renderStep();
+        return;
+      }
+
+      if (currentStep < steps.length - 1) {
+        currentStep += 1;
+        currentQuestionIndex = 0;
+        currentQuestions = await fetchAIQuestions(problemInput, steps[currentStep].key);
+        renderStep();
+      } else {
+        showScreen("result");
+      }
+    }
+
+    async function prevStep(){
+      saveCurrentStep();
+
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex -= 1;
+        renderStep();
+        return;
+      }
+
+      if (currentStep > 0) {
+        currentStep -= 1;
+        currentQuestionIndex = 0;
+        currentQuestions = await fetchAIQuestions(problemInput, steps[currentStep].key);
+
+        if (currentQuestions.length > 0) {
+          currentQuestionIndex = currentQuestions.length - 1;
+        }
+
+        renderStep();
+      } else {
+        showScreen("input");
+      }
+    }
+
+    function buildDiscoveredProblem(){
+      if (draftProblemDot && draftProblemDot.trim()) return draftProblemDot.trim();
+
+      const topic = problemInput || "이 상황";
+      return `${topic} 자체보다, 반복되는 패턴과 관점 차이 속에서 드러나는 구조가 진짜 문제일 수 있다.`;
+    }
+
+    function buildFinalPrompt(){
+      const discovered = buildDiscoveredProblem();
+
+      let summary = "";
+      Object.entries(answers).forEach(([key, value]) => {
+        if (value && String(value).trim()) {
+          summary += `- ${key}: ${value}\n`;
+        }
+      });
+
+      if (!summary) summary = "- 아직 기록된 사고 내용이 없습니다.";
+
+      return `다음은 HANDOT Problem dot 과정을 통해 정리한 문제입니다.
+
+처음 문제라고 생각한 것:
+${problemInput || "(입력 없음)"}
+
+새롭게 발견한 Problem dot:
+${discovered}
+
+사고 과정 요약:
+${summary}
+위 내용을 바탕으로 이 문제를 해결할 수 있는 아이디어를 제안해줘.
+해결안은 운영 방식, 구조 개선, 정보 설계, 기술 도입 측면으로 나누어 제시해줘.`;
+    }
+
+    function renderResult(){
+      const discovered = buildDiscoveredProblem();
+      document.getElementById("result-original").textContent = problemInput || "(입력 없음)";
+      document.getElementById("result-discovered").textContent = discovered;
+      document.getElementById("final-prompt").textContent = buildFinalPrompt();
+
+      const grid = document.getElementById("result-grid");
+      grid.innerHTML = "";
+
+      steps.forEach(step => {
+        const values = Object.entries(answers)
+          .filter(([key]) => key.startsWith(step.key + "_"))
+          .map(([, value]) => value)
+          .filter(Boolean);
+
+        const div = document.createElement("div");
+        div.className = "subcard";
+        div.innerHTML = `
+          <div class="label">${step.title}</div>
+          <div style="margin-top:12px;font-size:14px;line-height:1.8;color:#334155;word-break:keep-all;">
+            ${values.length ? escapeHtml(values.join("\n\n")).replace(/\n/g,"<br>") : "입력 없음"}
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function escapeHtml(str){
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    async function backToLastStep(){
+      currentStep = steps.length - 1;
+      currentQuestionIndex = 0;
+      currentQuestions = await fetchAIQuestions(problemInput, steps[currentStep].key);
+
+      if (currentQuestions.length > 0) {
+        currentQuestionIndex = currentQuestions.length - 1;
+      }
+
+      showScreen("step");
+    }
+
+    function copyPrompt(){
+      const text = document.getElementById("final-prompt").innerText;
+      navigator.clipboard.writeText(text);
+      document.getElementById("copy-note").textContent = "프롬프트가 복사되었습니다.";
+      setTimeout(() => {
+        document.getElementById("copy-note").textContent = "";
+      }, 2000);
+    }
+
+    function restartAll(){
+      currentStep = 0;
+      currentQuestionIndex = 0;
+      currentQuestions = [];
+      problemInput = "도서관에서 자리를 잡기 어렵다";
+      answers = {};
+      draftProblemDot = "";
+      document.getElementById("problemInput").value = problemInput;
+      document.getElementById("loading-note").textContent = "";
+      document.getElementById("copy-note").textContent = "";
+      showScreen("landing");
+    }
+  </script>
 </body>
 </html>

@@ -104,6 +104,7 @@
       line-height:1.05;
       margin:22px 0 0;
       font-weight:950;
+      word-break:keep-all;
     }
 
     .hero p{
@@ -478,7 +479,6 @@
             <div id="step-indicator" style="font-size:14px;font-weight:800;color:#64748b;margin-top:8px;"></div>
             <div class="big-title" id="step-title"></div>
             <div class="desc" id="step-korean" style="margin-top:8px"></div>
-            <div id="question-indicator" style="font-size:14px;font-weight:700;color:#64748b;margin-top:8px;"></div>
           </div>
           <div class="progress" id="progress"></div>
         </div>
@@ -626,8 +626,7 @@
     let problemInput = "도서관에서 자리를 잡기 어렵다";
     let answers = {};
     let draftProblemDot = "";
-    let currentQuestions = [];
-    let currentQuestionIndex = 0;
+    let currentQuestion = "";
 
     function showScreen(name){
       document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
@@ -637,56 +636,24 @@
       if(name === "result") renderResult();
     }
 
-    function getFallbackQuestions(problem, stepKey){
+    function getFallbackQuestion(problem, stepKey){
       const topic = (problem || "").trim() || "이 상황";
 
       const fallback = {
-        imagination: [
-          `${topic}이 정말 문제라고 할 수 있을까?`,
-          `${topic}을 문제로 보지 않는다면 어떤 다른 해석이 가능할까?`,
-          `${topic}이 실제 현상보다 느낌에 가까운 것은 아닐까?`
-        ],
-        observation: [
-          `${topic}은 언제 가장 자주 발생하는가?`,
-          `${topic}이 반복되는 구체적인 장면은 무엇인가?`,
-          `${topic}을 경험하는 사람들은 어떤 행동을 하고 있는가?`
-        ],
-        perspective: [
-          `${topic}을 사용자 입장에서 보면 무엇이 문제인가?`,
-          `${topic}을 운영자 입장에서 보면 무엇이 다르게 보일까?`,
-          `${topic}을 시스템 입장에서 보면 무엇이 핵심일까?`
-        ],
-        connection: [
-          `${topic}과 비슷한 구조를 가진 다른 상황은 무엇일까?`,
-          `${topic}을 전혀 다른 맥락과 연결하면 무엇이 보일까?`,
-          `${topic}은 다른 문제와 어떤 방식으로 이어져 있을까?`
-        ],
-        transformation: [
-          `${topic}의 순서가 바뀌면 문제 인식도 달라질까?`,
-          `${topic}의 규모가 줄거나 커지면 무엇이 달라질까?`,
-          `${topic}의 구조를 뒤집어 보면 무엇이 보일까?`
-        ],
-        constraint: [
-          `${topic}에서 바꿀 수 없는 조건은 무엇인가?`,
-          `${topic}을 더 어렵게 만드는 제약은 무엇인가?`,
-          `${topic}의 본질을 드러내는 제한 조건은 무엇일까?`
-        ],
-        question: [
-          `${topic}에 대해 다시 물어야 할 핵심 질문은 무엇인가?`,
-          `${topic}을 당연하게 만든 전제는 무엇인가?`,
-          `${topic}을 진짜 문제로 만드는 근거는 무엇인가?`
-        ],
-        discovery: [
-          `처음 문제와 지금 보이는 문제는 어떻게 다른가?`,
-          `${topic}의 겉문제와 속문제를 나누면 무엇인가?`,
-          `${topic}에서 가장 핵심적인 Problem dot은 무엇인가?`
-        ]
+        imagination: `${topic}이 정말 문제라고 할 수 있을까?`,
+        observation: `${topic}은 언제 가장 자주 발생하는가?`,
+        perspective: `${topic}을 다른 입장에서 보면 무엇이 다르게 보일까?`,
+        connection: `${topic}과 비슷한 구조를 가진 다른 상황은 무엇일까?`,
+        transformation: `${topic}의 구조를 바꿔서 보면 무엇이 달라질까?`,
+        constraint: `${topic}에서 바꿀 수 없는 제약은 무엇인가?`,
+        question: `${topic}에 대해 다시 물어야 할 핵심 질문은 무엇인가?`,
+        discovery: `처음 문제와 지금 보이는 문제는 어떻게 다른가?`
       };
 
-      return fallback[stepKey] || [`${topic}에 대해 다시 생각해 볼 질문은 무엇인가?`];
+      return fallback[stepKey] || `${topic}에 대해 다시 생각해 볼 질문은 무엇인가?`;
     }
 
-    async function fetchAIQuestions(problem, stepKey){
+    async function fetchAIQuestion(problem, stepKey){
       try {
         const res = await fetch("/api/questions", {
           method: "POST",
@@ -704,18 +671,18 @@
 
         if (!res.ok) {
           console.error("API 오류:", data);
-          return getFallbackQuestions(problem, stepKey);
+          return getFallbackQuestion(problem, stepKey);
         }
 
-        if (data && Array.isArray(data.questions) && data.questions.length > 0) {
-          return data.questions;
+        if (data && typeof data.question === "string" && data.question.trim()) {
+          return data.question.trim();
         }
 
-        return getFallbackQuestions(problem, stepKey);
+        return getFallbackQuestion(problem, stepKey);
 
       } catch (error) {
         console.error("AI 질문 생성 오류:", error);
-        return getFallbackQuestions(problem, stepKey);
+        return getFallbackQuestion(problem, stepKey);
       }
     }
 
@@ -740,12 +707,9 @@
       document.getElementById("loading-note").textContent = "AI가 첫 질문을 생성하고 있습니다...";
 
       currentStep = 0;
-      currentQuestionIndex = 0;
-      currentQuestions = [];
       answers = {};
       draftProblemDot = "";
-
-      currentQuestions = await fetchAIQuestions(problemInput, steps[currentStep].key);
+      currentQuestion = await fetchAIQuestion(problemInput, steps[currentStep].key);
 
       document.getElementById("loading-note").textContent = "";
       showScreen("step");
@@ -768,52 +732,30 @@
     function renderStep(){
       const step = steps[currentStep];
 
-      if (!currentQuestions || currentQuestions.length === 0) {
-        currentQuestions = getFallbackQuestions(problemInput, step.key);
-      }
-
-      if (currentQuestionIndex >= currentQuestions.length) {
-        currentQuestionIndex = 0;
-      }
-
       document.getElementById("step-indicator").textContent =
         `STEP ${currentStep + 1} / ${steps.length}`;
 
-      document.getElementById("question-indicator").textContent =
-        `질문 ${currentQuestionIndex + 1} / ${currentQuestions.length}`;
-
       document.getElementById("step-title").textContent = step.title;
-      document.getElementById("step-korean").textContent = step.korean;
-      document.getElementById("step-desc").textContent = step.desc;
+      document.getElementById("step-korean").textContent = `${step.korean} · ${step.desc}`;
+      document.getElementById("step-desc").textContent = "위 질문 하나를 중심으로 천천히 생각해 보세요.";
       document.getElementById("current-problem").textContent =
         problemInput || "입력된 내용이 없습니다.";
 
-      const answerKey = `${step.key}_${currentQuestionIndex}`;
-      document.getElementById("step-answer").value = answers[answerKey] || "";
+      document.getElementById("step-answer").value = answers[step.key] || "";
 
       const qBox = document.getElementById("question-list");
       qBox.innerHTML = "";
 
       const div = document.createElement("div");
       div.className = "question-item";
-      div.textContent = currentQuestions[currentQuestionIndex];
+      div.textContent = currentQuestion;
       qBox.appendChild(div);
 
-      const nextBtn = document.getElementById("next-btn");
-
-      if (currentQuestionIndex < currentQuestions.length - 1) {
-        nextBtn.textContent = "다음 질문";
-      } else if (currentStep < steps.length - 1) {
-        nextBtn.textContent = "다음 point";
-      } else {
-        nextBtn.textContent = "결과 보기";
-      }
-
-      const hintBox = document.getElementById("thinking-hint");
-      hintBox.textContent = "위 질문 하나를 중심으로 떠오르는 생각을 자유롭게 적어보세요.";
+      document.getElementById("next-btn").textContent =
+        currentStep === steps.length - 1 ? "결과 보기" : "다음 point";
 
       const draftWrap = document.getElementById("draft-wrap");
-      if (step.key === "discovery" && currentQuestionIndex === currentQuestions.length - 1) {
+      if (step.key === "discovery") {
         draftWrap.classList.remove("hidden");
         document.getElementById("draft-problem").value = draftProblemDot;
       } else {
@@ -825,13 +767,9 @@
 
     function saveCurrentStep(){
       const step = steps[currentStep];
-      const key = `${step.key}_${currentQuestionIndex}`;
-      answers[key] = document.getElementById("step-answer").value.trim();
+      answers[step.key] = document.getElementById("step-answer").value.trim();
 
-      if (
-        step.key === "discovery" &&
-        currentQuestionIndex === currentQuestions.length - 1
-      ) {
+      if (step.key === "discovery") {
         draftProblemDot = document.getElementById("draft-problem").value.trim();
       }
     }
@@ -839,16 +777,9 @@
     async function nextStep(){
       saveCurrentStep();
 
-      if (currentQuestionIndex < currentQuestions.length - 1) {
-        currentQuestionIndex += 1;
-        renderStep();
-        return;
-      }
-
       if (currentStep < steps.length - 1) {
         currentStep += 1;
-        currentQuestionIndex = 0;
-        currentQuestions = await fetchAIQuestions(problemInput, steps[currentStep].key);
+        currentQuestion = await fetchAIQuestion(problemInput, steps[currentStep].key);
         renderStep();
       } else {
         showScreen("result");
@@ -858,21 +789,9 @@
     async function prevStep(){
       saveCurrentStep();
 
-      if (currentQuestionIndex > 0) {
-        currentQuestionIndex -= 1;
-        renderStep();
-        return;
-      }
-
       if (currentStep > 0) {
         currentStep -= 1;
-        currentQuestionIndex = 0;
-        currentQuestions = await fetchAIQuestions(problemInput, steps[currentStep].key);
-
-        if (currentQuestions.length > 0) {
-          currentQuestionIndex = currentQuestions.length - 1;
-        }
-
+        currentQuestion = await fetchAIQuestion(problemInput, steps[currentStep].key);
         renderStep();
       } else {
         showScreen("input");
@@ -922,17 +841,14 @@ ${summary}
       grid.innerHTML = "";
 
       steps.forEach(step => {
-        const values = Object.entries(answers)
-          .filter(([key]) => key.startsWith(step.key + "_"))
-          .map(([, value]) => value)
-          .filter(Boolean);
+        const value = answers[step.key] || "";
 
         const div = document.createElement("div");
         div.className = "subcard";
         div.innerHTML = `
           <div class="label">${step.title}</div>
           <div style="margin-top:12px;font-size:14px;line-height:1.8;color:#334155;word-break:keep-all;">
-            ${values.length ? escapeHtml(values.join("\n\n")).replace(/\n/g,"<br>") : "입력 없음"}
+            ${value ? escapeHtml(value).replace(/\n/g,"<br>") : "입력 없음"}
           </div>
         `;
         grid.appendChild(div);
@@ -948,13 +864,7 @@ ${summary}
 
     async function backToLastStep(){
       currentStep = steps.length - 1;
-      currentQuestionIndex = 0;
-      currentQuestions = await fetchAIQuestions(problemInput, steps[currentStep].key);
-
-      if (currentQuestions.length > 0) {
-        currentQuestionIndex = currentQuestions.length - 1;
-      }
-
+      currentQuestion = await fetchAIQuestion(problemInput, steps[currentStep].key);
       showScreen("step");
     }
 
@@ -969,11 +879,10 @@ ${summary}
 
     function restartAll(){
       currentStep = 0;
-      currentQuestionIndex = 0;
-      currentQuestions = [];
       problemInput = "도서관에서 자리를 잡기 어렵다";
       answers = {};
       draftProblemDot = "";
+      currentQuestion = "";
       document.getElementById("problemInput").value = problemInput;
       document.getElementById("loading-note").textContent = "";
       document.getElementById("copy-note").textContent = "";

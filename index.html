@@ -564,62 +564,14 @@
 
   <script>
     const steps = [
-      {
-        key: "imagination",
-        no: "01",
-        title: "point of imagination",
-        korean: "상상의 지점",
-        desc: "문제의 가정을 흔들어 보는 단계"
-      },
-      {
-        key: "observation",
-        no: "02",
-        title: "point of observation",
-        korean: "관찰의 지점",
-        desc: "실제 상황을 관찰하는 단계"
-      },
-      {
-        key: "perspective",
-        no: "03",
-        title: "point of perspective",
-        korean: "관점의 지점",
-        desc: "다른 관점에서 바라보는 단계"
-      },
-      {
-        key: "connection",
-        no: "04",
-        title: "point of connection",
-        korean: "연결의 지점",
-        desc: "다른 상황과 연결해 보는 단계"
-      },
-      {
-        key: "transformation",
-        no: "05",
-        title: "point of transformation",
-        korean: "변형의 지점",
-        desc: "구조 변화를 상상하는 단계"
-      },
-      {
-        key: "constraint",
-        no: "06",
-        title: "point of constraint",
-        korean: "제약의 지점",
-        desc: "제약 조건을 탐색하는 단계"
-      },
-      {
-        key: "question",
-        no: "07",
-        title: "point of question",
-        korean: "질문의 지점",
-        desc: "핵심 질문을 찾는 단계"
-      },
-      {
-        key: "discovery",
-        no: "08",
-        title: "problem discovery point",
-        korean: "문제 발견의 지점",
-        desc: "Problem dot을 정리하는 단계"
-      }
+      { key: "imagination", no: "01", title: "point of imagination", korean: "상상의 지점", desc: "문제의 가정을 흔들어 보는 단계" },
+      { key: "observation", no: "02", title: "point of observation", korean: "관찰의 지점", desc: "실제 상황을 관찰하는 단계" },
+      { key: "perspective", no: "03", title: "point of perspective", korean: "관점의 지점", desc: "다른 관점에서 바라보는 단계" },
+      { key: "connection", no: "04", title: "point of connection", korean: "연결의 지점", desc: "다른 상황과 연결해 보는 단계" },
+      { key: "transformation", no: "05", title: "point of transformation", korean: "변형의 지점", desc: "구조 변화를 상상하는 단계" },
+      { key: "constraint", no: "06", title: "point of constraint", korean: "제약의 지점", desc: "제약 조건을 탐색하는 단계" },
+      { key: "question", no: "07", title: "point of question", korean: "질문의 지점", desc: "핵심 질문을 찾는 단계" },
+      { key: "discovery", no: "08", title: "problem discovery point", korean: "문제 발견의 지점", desc: "Problem dot을 정리하는 단계" }
     ];
 
     let currentStep = 0;
@@ -627,6 +579,7 @@
     let answers = {};
     let draftProblemDot = "";
     let currentQuestion = "";
+    let stepQuestions = {};
 
     function showScreen(name){
       document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
@@ -638,7 +591,6 @@
 
     function getFallbackQuestion(problem, stepKey){
       const topic = (problem || "").trim() || "이 상황";
-
       const fallback = {
         imagination: `${topic}이 정말 문제라고 할 수 있을까?`,
         observation: `${topic}은 언제 가장 자주 발생하는가?`,
@@ -649,7 +601,6 @@
         question: `${topic}에 대해 다시 물어야 할 핵심 질문은 무엇인가?`,
         discovery: `처음 문제와 지금 보이는 문제는 어떻게 다른가?`
       };
-
       return fallback[stepKey] || `${topic}에 대해 다시 생각해 볼 질문은 무엇인가?`;
     }
 
@@ -657,9 +608,7 @@
       try {
         const res = await fetch("/api/questions", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             problem: problem,
             previous_answers: answers,
@@ -679,7 +628,6 @@
         }
 
         return getFallbackQuestion(problem, stepKey);
-
       } catch (error) {
         console.error("AI 질문 생성 오류:", error);
         return getFallbackQuestion(problem, stepKey);
@@ -709,7 +657,11 @@
       currentStep = 0;
       answers = {};
       draftProblemDot = "";
+      currentQuestion = "";
+      stepQuestions = {};
+
       currentQuestion = await fetchAIQuestion(problemInput, steps[currentStep].key);
+      stepQuestions[steps[currentStep].key] = currentQuestion;
 
       document.getElementById("loading-note").textContent = "";
       showScreen("step");
@@ -732,15 +684,11 @@
     function renderStep(){
       const step = steps[currentStep];
 
-      document.getElementById("step-indicator").textContent =
-        `STEP ${currentStep + 1} / ${steps.length}`;
-
+      document.getElementById("step-indicator").textContent = `STEP ${currentStep + 1} / ${steps.length}`;
       document.getElementById("step-title").textContent = step.title;
       document.getElementById("step-korean").textContent = `${step.korean} · ${step.desc}`;
       document.getElementById("step-desc").textContent = "위 질문 하나를 중심으로 천천히 생각해 보세요.";
-      document.getElementById("current-problem").textContent =
-        problemInput || "입력된 내용이 없습니다.";
-
+      document.getElementById("current-problem").textContent = problemInput || "입력된 내용이 없습니다.";
       document.getElementById("step-answer").value = answers[step.key] || "";
 
       const qBox = document.getElementById("question-list");
@@ -779,7 +727,15 @@
 
       if (currentStep < steps.length - 1) {
         currentStep += 1;
-        currentQuestion = await fetchAIQuestion(problemInput, steps[currentStep].key);
+        const stepKey = steps[currentStep].key;
+
+        if (stepQuestions[stepKey]) {
+          currentQuestion = stepQuestions[stepKey];
+        } else {
+          currentQuestion = await fetchAIQuestion(problemInput, stepKey);
+          stepQuestions[stepKey] = currentQuestion;
+        }
+
         renderStep();
       } else {
         showScreen("result");
@@ -791,7 +747,15 @@
 
       if (currentStep > 0) {
         currentStep -= 1;
-        currentQuestion = await fetchAIQuestion(problemInput, steps[currentStep].key);
+        const stepKey = steps[currentStep].key;
+
+        if (stepQuestions[stepKey]) {
+          currentQuestion = stepQuestions[stepKey];
+        } else {
+          currentQuestion = await fetchAIQuestion(problemInput, stepKey);
+          stepQuestions[stepKey] = currentQuestion;
+        }
+
         renderStep();
       } else {
         showScreen("input");
@@ -800,7 +764,6 @@
 
     function buildDiscoveredProblem(){
       if (draftProblemDot && draftProblemDot.trim()) return draftProblemDot.trim();
-
       const topic = problemInput || "이 상황";
       return `${topic} 자체보다, 반복되는 패턴과 관점 차이 속에서 드러나는 구조가 진짜 문제일 수 있다.`;
     }
@@ -842,7 +805,6 @@ ${summary}
 
       steps.forEach(step => {
         const value = answers[step.key] || "";
-
         const div = document.createElement("div");
         div.className = "subcard";
         div.innerHTML = `
@@ -864,7 +826,15 @@ ${summary}
 
     async function backToLastStep(){
       currentStep = steps.length - 1;
-      currentQuestion = await fetchAIQuestion(problemInput, steps[currentStep].key);
+      const stepKey = steps[currentStep].key;
+
+      if (stepQuestions[stepKey]) {
+        currentQuestion = stepQuestions[stepKey];
+      } else {
+        currentQuestion = await fetchAIQuestion(problemInput, stepKey);
+        stepQuestions[stepKey] = currentQuestion;
+      }
+
       showScreen("step");
     }
 
@@ -883,6 +853,7 @@ ${summary}
       answers = {};
       draftProblemDot = "";
       currentQuestion = "";
+      stepQuestions = {};
       document.getElementById("problemInput").value = problemInput;
       document.getElementById("loading-note").textContent = "";
       document.getElementById("copy-note").textContent = "";
